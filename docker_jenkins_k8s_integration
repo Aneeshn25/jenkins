@@ -1,0 +1,76 @@
+#!/bin/bash
+if [ -d piktorya ] ; then
+    rm -rf piktorya
+fi
+git clone -b docker https://github.com/Aneeshn25/piktorya
+cd piktorya
+file=$(git log --name-status HEAD^..HEAD)
+name=$(echo $file | awk '{print $NF}')
+folder=${name%%/*}
+echo $folder
+
+
+tags=$(wget -q https://registry.hub.docker.com/v1/repositories/aneeshn25/piktorya/tags -O -  | sed -e 's/[][]//g' -e 's/"//g' -e 's/ //g' | tr '}' '\n'  | awk -F: '{print $3}')
+
+
+if [ "$folder" == "php" ]
+then
+    tag=app
+        taglist=$(grep "$tag" <<< "$tags")
+        latesttag=$(echo $taglist | awk '{print $NF}')
+        check=$(echo ${latesttag:3})
+        [ -z "$check" ] && echo "app Empty"|| echo "app Not empty"
+        if [ -z "$check" ]
+        then
+            imgver=$tag-1
+            echo $imgver
+        else
+            preimgverno=${latesttag:4}
+            imgverno=$((preimgverno+1))
+            imgver=app-$imgverno
+            echo $imgver
+        fi
+elif [ "$folder" == "nginx" ] 
+then
+    tag=webserver
+        taglist=$(grep "$tag" <<< "$tags")
+        latesttag=$(echo $taglist | awk '{print $NF}')
+        check=$(echo ${latesttag:9})
+        [ -z "$check" ] && echo "web Empty"|| echo "web Not empty"
+        if [ -z "$check" ]
+        then
+            imgver=$tag-1
+            echo $imgver
+        else
+            preimgverno=${latesttag:10}
+            imgverno=$((preimgverno+1))
+            imgver=webserver-$imgverno
+            echo $imgver
+        fi
+elif [ "$folder" == "mysql" ]
+then
+    tag=db
+        taglist=$(grep "$tag" <<< "$tags")
+        latesttag=$(echo $taglist | awk '{print $NF}')
+        check=$(echo ${latesttag:2})
+        [ -z "$check" ] && echo "db Empty"|| echo "db Not empty"
+        if [ -z "$check" ]
+        then
+            imgver=$tag-1
+            echo $imgver
+        else
+            preimgverno=${latesttag:3}
+            imgverno=$((preimgverno+1))
+            imgver=db-$imgverno
+            echo $imgver
+        fi
+else
+    echo "no commit on images"
+    exit
+fi
+
+cd $folder
+
+cat /home/aneeshn/my_password.txt | docker login --username aneeshn25 --password-stdin
+docker build -t aneeshn25/piktorya:$imgver .
+docker push aneeshn25/piktorya:$imgver

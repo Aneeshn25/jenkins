@@ -74,3 +74,17 @@ cd $folder
 cat /home/aneeshn/my_password.txt | docker login --username aneeshn25 --password-stdin
 docker build -t aneeshn25/piktorya:$imgver .
 docker push aneeshn25/piktorya:$imgver
+
+
+#deployment
+#clone the git repo
+git clone https://github.com/Aneeshn25/piktorya
+cd piktorya/k8s/
+export PATH=/snap/bin/:$PATH
+sed -i -e 's/piktorya:'"$latesttag"'/piktorya:'"$imgver"'/g' $tag.yaml
+kubectl apply -f .
+kubectl get all
+#git add .
+#commit="updated image version from "$latesttag" to "$imgver"
+#git commit -m $commit
+#git push origin master

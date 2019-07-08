@@ -81,6 +81,7 @@ docker push aneeshn25/piktorya:$imgver
 git clone https://github.com/Aneeshn25/piktorya
 cd piktorya/k8s/
 export PATH=/snap/bin/:$PATH
+kubectl delete -f .
 sed -i -e 's/piktorya:'"$latesttag"'/piktorya:'"$imgver"'/g' $tag.yaml
 kubectl apply -f .
 kubectl get all
